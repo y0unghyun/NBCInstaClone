@@ -6,12 +6,24 @@
 //
 
 import UIKit
+import CoreData
+
+struct User {
+    var id: UUID
+    var name: String
+    var age: Int
+}
 
 func getSampleImages() -> [UIImage?] {
     (1...20).map { _ in return UIImage(named: "dummy1")}
 }
 
 class ViewController: UIViewController {
+    
+    let newUser = User(id: UUID(), name: "Tobi", age: 29)
+    
+    
+    
     private var dummy = getSampleImages()
     
     private let gridFlowLayout: GridCollectionViewFlowLayout = {
@@ -239,14 +251,12 @@ class ViewController: UIViewController {
         return view
     }()
     
-    @objc func moveToProfileVC() {
-        present(ProfileViewController(), animated: true)
-    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        setUser()
         addViews()
         setConstraint()
         
@@ -349,6 +359,33 @@ class ViewController: UIViewController {
         view.addSubview(moreButton)
         view.addSubview(customCollectionView)
         view.addSubview(bottomStack)
+    }
+    
+    // MARK: Other Methods
+    @objc func moveToProfileVC() {
+        present(ProfileViewController(), animated: true)
+    }
+    
+    func setUser() {
+        var persistentContainer: NSPersistentContainer? {
+            (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer
+        }
+        
+        guard let context = persistentContainer?.viewContext else { return }
+        let entity = NSEntityDescription.entity(forEntityName: "UserData", in: context)
+        
+        if let entity = entity {
+            let user = NSManagedObject(entity: entity, insertInto: context)
+            user.setValue(newUser.id, forKey: "id")
+            user.setValue(newUser.name, forKey: "name")
+            user.setValue(newUser.age, forKey: "age")
+            
+            do {
+                try context.save()
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
     }
 }
 

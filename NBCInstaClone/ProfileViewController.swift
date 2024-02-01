@@ -6,8 +6,11 @@
 //
 
 import UIKit
+import CoreData
 
 class ProfileViewController: UIViewController {
+    var userName: String?
+    var userAge: Int16?
     
     let userImageView: UIImageView = {
         let image = UIImageView()
@@ -38,7 +41,14 @@ class ProfileViewController: UIViewController {
         self.view.backgroundColor = .white
         addView()
         setConstraint()
+        fetchCoreData()
     }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(true)
+//        self.userNameLabel.text = userName
+//        self.userAgeLabel.text = "\(userAge)"
+//    }
     
     func addView() {
         view.addSubview(userImageView)
@@ -63,6 +73,22 @@ class ProfileViewController: UIViewController {
             userAgeLabel.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 14),
             userAgeLabel.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: 14)
         ])
+    }
+    
+    func fetchCoreData() {
+        var persistentContainer: NSPersistentContainer? {
+            (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer
+        }
+        
+        guard let context = persistentContainer?.viewContext else { return }
+        
+        do {
+            let user = try context.fetch(UserData.fetchRequest()) // coredata 변경점 가져오기
+            self.userNameLabel.text = user.first?.name
+            self.userAgeLabel.text = "\(user.first?.age ?? 00)"
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }
 
